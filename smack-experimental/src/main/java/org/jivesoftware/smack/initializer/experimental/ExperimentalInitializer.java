@@ -16,7 +16,11 @@
  */
 package org.jivesoftware.smack.initializer.experimental;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import org.jivesoftware.smack.initializer.UrlInitializer;
+import org.jivesoftware.smack.provider.ProviderFileLoader.ProviderDescriptor;
 
 /**
  * Initializes the providers in the experimental code stream.
@@ -26,12 +30,23 @@ import org.jivesoftware.smack.initializer.UrlInitializer;
 public class ExperimentalInitializer extends UrlInitializer {
 
     @Override
-    protected String getProvidersUrl() {
-        return "classpath:org.jivesoftware.smackx/experimental.providers";
+    protected List<ProviderDescriptor> getProvidersUrl() {
+    	List<ProviderDescriptor> providers = new ArrayList<ProviderDescriptor>();
+
+        // XEP-0332 HTTP over XMPP transport
+		providers.add(new ProviderDescriptor(true, "req", "urn:xmpp:http", "org.jivesoftware.smackx.hoxt.provider.HttpOverXmppReqProvider"));
+		providers.add(new ProviderDescriptor(true, "resp", "urn:xmpp:http", "org.jivesoftware.smackx.hoxt.provider.HttpOverXmppRespProvider"));
+		providers.add(new ProviderDescriptor(false, "chunk", "urn:xmpp:http", "org.jivesoftware.smackx.hoxt.provider.Base64BinaryChunkProvider"));
+		// XEP-0280 Message Carbons
+		providers.add(new ProviderDescriptor(false, "sent", "urn:xmpp:carbons:2", "org.jivesoftware.smackx.carbons.provider.CarbonManagerProvider"));
+		providers.add(new ProviderDescriptor(false, "received", "urn:xmpp:carbons:2", "org.jivesoftware.smackx.carbons.provider.CarbonManagerProvider"));
+
+		return providers;
     }
 
     @Override
-    protected String getConfigUrl() {
-        return "classpath:org.jivesoftware.smackx/experimental.xml";
+    protected String[] getConfigUrl() {
+        return new String[]{
+         	"org.jivesoftware.smackx.hoxt.HOXTManager"};
     }
 }

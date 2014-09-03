@@ -16,12 +16,20 @@
  */
 package org.jivesoftware.smack.initializer.legacy;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import org.jivesoftware.smack.initializer.UrlInitializer;
+import org.jivesoftware.smack.provider.ProviderFileLoader.ProviderDescriptor;
 
 public class LegacyInitializer extends UrlInitializer {
 
     @Override
-    protected String getProvidersUrl() {
-        return "classpath:org.jivesoftware.smackx/legacy.providers";
+    protected List<ProviderDescriptor> getProvidersUrl() {
+        List<ProviderDescriptor> providers = new ArrayList<ProviderDescriptor>();
+
+		providers.add(new ProviderDescriptor(false, "x", "jabber:x:roster", "org.jivesoftware.smackx.xroster.provider.RosterExchangeProvider"));
+
+		return providers;
     }
 }

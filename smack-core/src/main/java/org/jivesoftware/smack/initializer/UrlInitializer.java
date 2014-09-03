@@ -27,6 +27,7 @@ import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.provider.ProviderFileLoader;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.FileUtils;
+import org.jivesoftware.smack.provider.ProviderFileLoader.ProviderDescriptor;
 
 /**
  * Loads the provider file defined by the URL returned by {@link #getProvidersUrl()} and the generic
@@ -46,33 +47,19 @@ public abstract class UrlInitializer extends SmackAndOsgiInitializer {
     public List<Exception> initialize(ClassLoader classLoader) {
         InputStream is;
         final List<Exception> exceptions = new LinkedList<Exception>();
-        final String providerUrl = getProvidersUrl();
+        final List<ProviderDescriptor> providerUrl = getProvidersUrl();
         if (providerUrl != null) {
-            try {
-                is = FileUtils.getStreamForUrl(providerUrl, classLoader);
-
-                if (is != null) {
-                    LOGGER.log(Level.FINE, "Loading providers for providerUrl [" + providerUrl
-                                    + "]");
-                    ProviderFileLoader pfl = new ProviderFileLoader(is, classLoader);
-                    ProviderManager.addLoader(pfl);
-                    exceptions.addAll(pfl.getLoadingExceptions());
-                }
-                else {
-                    LOGGER.log(Level.WARNING, "No input stream created for " + providerUrl);
-                    exceptions.add(new IOException("No input stream created for " + providerUrl));
-                }
-            }
-            catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Error trying to load provider file " + providerUrl, e);
-                exceptions.add(e);
-            }
+            ProviderFileLoader pfl = new ProviderFileLoader(providerUrl, classLoader);
+            ProviderManager.addLoader(pfl);
+            exceptions.addAll(pfl.getLoadingExceptions());
         }
-        final String configUrl = getConfigUrl();
+
+        final String[] configUrl = getConfigUrl();
         if (configUrl != null) {
             try {
-                is = FileUtils.getStreamForUrl(configUrl, classLoader);
-                SmackConfiguration.processConfigFile(is, exceptions, classLoader);
+                for(String smackClass : configUrl) {
+                    SmackConfiguration.loadSmackClass(smackClass, true, classLoader);
+                }
             }
             catch (Exception e) {
                 exceptions.add(e);
@@ -81,11 +68,11 @@ public abstract class UrlInitializer extends SmackAndOsgiInitializer {
         return exceptions;
     }
 
-    protected String getProvidersUrl() {
+    protected List<ProviderDescriptor> getProvidersUrl() {
         return null;
     }
 
-    protected String getConfigUrl() {
+    protected String[] getConfigUrl() {
         return null;
     }
 }

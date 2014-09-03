@@ -135,6 +135,57 @@ public class ProviderFileLoader implements ProviderLoader {
         }
     }
 
+
+    public ProviderFileLoader(List<ProviderDescriptor> providerDescriptors, ClassLoader classLoader) {
+        iqProviders = new ArrayList<IQProviderInfo>();
+        extProviders = new ArrayList<ExtensionProviderInfo>();
+
+        for (ProviderDescriptor descriptor : providerDescriptors) {
+            try {
+                final Class<?> provider = classLoader.loadClass(descriptor.className);
+                // Attempt to load the provider class and then create
+                // a new instance if it's an IQProvider. Otherwise, if it's
+                // an IQ class, add the class object itself, then we'll use
+                // reflection later to create instances of the class.
+                if (descriptor.isIqProvider) {
+                    // Add the provider to the map.
+                    
+                    if (IQProvider.class.isAssignableFrom(provider)) {
+                        iqProviders.add(new IQProviderInfo(descriptor.elementName, descriptor.namespace, (IQProvider) provider.newInstance()));
+                    }
+                    else if (IQ.class.isAssignableFrom(provider)) {
+                        iqProviders.add(new IQProviderInfo(descriptor.elementName, descriptor.namespace, (Class<? extends IQ>)provider));
+                    }
+                }
+                else {
+                    // Attempt to load the provider class and then create
+                    // a new instance if it's an ExtensionProvider. Otherwise, if it's
+                    // a PacketExtension, add the class object itself and
+                    // then we'll use reflection later to create instances
+                    // of the class.
+                    if (PacketExtensionProvider.class.isAssignableFrom(provider)) {
+                        extProviders.add(new ExtensionProviderInfo(descriptor.elementName, descriptor.namespace, (PacketExtensionProvider) provider.newInstance()));
+                    }
+                    else if (PacketExtension.class.isAssignableFrom(provider)) {
+                        extProviders.add(new ExtensionProviderInfo(descriptor.elementName, descriptor.namespace, provider));
+                    }
+                }
+            }
+            catch (ClassNotFoundException e) {
+                LOGGER.log(Level.SEVERE, "Could not find provider class", e);
+                exceptions.add(e);
+            }
+            catch (IllegalAccessException e) {
+                LOGGER.log(Level.SEVERE, "Illegal access exception", e);
+                exceptions.add(e);
+            }
+            catch (InstantiationException e) {
+                LOGGER.log(Level.SEVERE, "Instantiation exception", e);
+                exceptions.add(e);
+            }
+        }
+    }
+
     @Override
     public Collection<IQProviderInfo> getIQProviderInfo() {
         return iqProviders;
@@ -147,5 +198,20 @@ public class ProviderFileLoader implements ProviderLoader {
 
     public List<Exception> getLoadingExceptions() {
         return Collections.unmodifiableList(exceptions);
+    }
+
+
+    public static class ProviderDescriptor {
+        private boolean isIqProvider;
+        private String elementName;
+        private String namespace;
+        private String className;
+
+        public ProviderDescriptor(boolean isIqProvider, String elementName, String namespace, String className) {
+            this.isIqProvider = isIqProvider;
+            this.elementName = elementName;
+            this.namespace = namespace;
+            this.className = className;
+        }
     }
 }
