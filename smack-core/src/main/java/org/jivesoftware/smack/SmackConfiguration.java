@@ -130,6 +130,7 @@ public final class SmackConfiguration {
         catch (IllegalAccessException e) {
         }
 
+<<<<<<< HEAD
         loadSmackClass("org.jivesoftware.smack.initializer.VmArgInitializer", false, SmackConfiguration.class.getClassLoader());
         loadSmackClass("org.jivesoftware.smack.ReconnectionManager", false, SmackConfiguration.class.getClassLoader());
         
@@ -137,6 +138,19 @@ public final class SmackConfiguration {
         loadSmackClass("org.jivesoftware.smack.initializer.extensions.ExtensionsInitializer", true, SmackConfiguration.class.getClassLoader());
         loadSmackClass("org.jivesoftware.smack.initializer.experimental.ExperimentalInitializer", true, SmackConfiguration.class.getClassLoader());
         loadSmackClass("org.jivesoftware.smack.initializer.legacy.LegacyInitializer", true, SmackConfiguration.class.getClassLoader());
+=======
+        try {
+            loadSmackClass("org.jivesoftware.smack.initializer.VmArgInitializer", false, SmackConfiguration.class.getClassLoader());
+            loadSmackClass("org.jivesoftware.smack.ReconnectionManager", false, SmackConfiguration.class.getClassLoader());
+            
+            loadSmackClass("org.jivesoftware.smack.util.dns.javax.JavaxResolver", true, SmackConfiguration.class.getClassLoader());
+            loadSmackClass("org.jivesoftware.smack.initializer.extensions.ExtensionsInitializer", true, SmackConfiguration.class.getClassLoader());
+            loadSmackClass("org.jivesoftware.smack.initializer.experimental.ExperimentalInitializer", true, SmackConfiguration.class.getClassLoader());
+            loadSmackClass("org.jivesoftware.smack.initializer.legacy.LegacyInitializer", true, SmackConfiguration.class.getClassLoader());
+        } catch (Exception e) {
+            throw e;
+        }
+>>>>>>> 1fbc008... Removed streams from SmackConfiguration
 
         // Add the Java7 compression handler first, since it's preferred
         compressionHandlers.add(new Java7ZlibInputOutputStream());
