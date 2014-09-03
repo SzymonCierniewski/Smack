@@ -97,20 +97,7 @@ public final class SmackConfiguration {
      * 3) set DEBUG_ENABLED
      */
     static {
-        String smackVersion;
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(FileUtils.getStreamForUrl("classpath:org.jivesoftware.smack/version", null)));
-            smackVersion = reader.readLine();
-            try {
-                reader.close();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "IOException closing stream", e);
-            }
-        } catch(Exception e) {
-            LOGGER.log(Level.SEVERE, "Could not determine Smack version", e);
-            smackVersion = "unkown";
-        }
-        SMACK_VERSION = smackVersion;
+        SMACK_VERSION = "4.0.2";
 
         String disabledClasses = System.getProperty("smack.disabledClasses");
         if (disabledClasses != null) {
@@ -143,20 +130,13 @@ public final class SmackConfiguration {
         catch (IllegalAccessException e) {
         }
 
-        InputStream configFileStream;
-        try {
-            configFileStream = FileUtils.getStreamForUrl(DEFAULT_CONFIG_FILE, null);
-        }
-        catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-
-        try {
-            processConfigFile(configFileStream, null);
-        }
-        catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        loadSmackClass("org.jivesoftware.smack.initializer.VmArgInitializer", false, SmackConfiguration.class.getClassLoader());
+        loadSmackClass("org.jivesoftware.smack.ReconnectionManager", false, SmackConfiguration.class.getClassLoader());
+        
+        loadSmackClass("org.jivesoftware.smack.util.dns.javax.JavaxResolver", true, SmackConfiguration.class.getClassLoader());
+        loadSmackClass("org.jivesoftware.smack.initializer.extensions.ExtensionsInitializer", true, SmackConfiguration.class.getClassLoader());
+        loadSmackClass("org.jivesoftware.smack.initializer.experimental.ExperimentalInitializer", true, SmackConfiguration.class.getClassLoader());
+        loadSmackClass("org.jivesoftware.smack.initializer.legacy.LegacyInitializer", true, SmackConfiguration.class.getClassLoader());
 
         // Add the Java7 compression handler first, since it's preferred
         compressionHandlers.add(new Java7ZlibInputOutputStream());
